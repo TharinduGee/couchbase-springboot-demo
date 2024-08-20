@@ -16,7 +16,7 @@ public interface AirportRepository extends CouchbaseRepository<Airport, String> 
 
     List<Airport> findAllByCountryContainingIgnoreCase(String country);
 
-    @Query("SELECT META().id WHERE type = 'LUXURY' ")
+    @Query("#{#n1ql.selectEntity} WHERE #{#n1ql.filter} AND type = 'LUXURY'")
     List<Airport> findAllLuxury();
 
 }
