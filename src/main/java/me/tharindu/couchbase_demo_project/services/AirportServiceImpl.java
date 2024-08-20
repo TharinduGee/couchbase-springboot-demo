@@ -1,21 +1,23 @@
 package me.tharindu.couchbase_demo_project.services;
 
-import com.couchbase.client.core.error.transaction.internal.CoreTransactionExpiredException;
-import com.couchbase.client.java.transactions.error.TransactionExpiredException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import me.tharindu.couchbase_demo_project.models.Airport;
 import me.tharindu.couchbase_demo_project.repositories.AirportRepository;
 import org.springframework.data.couchbase.core.CouchbaseOperations;
 import org.springframework.data.couchbase.core.ReactiveCouchbaseOperations;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.Assert;
 
 import java.time.Duration;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class AirportServiceImpl implements AirportService {
 
     private final AirportRepository airportRepository;
@@ -72,6 +74,16 @@ public class AirportServiceImpl implements AirportService {
     @Override
     public List<Airport> findAllLuxury() {
         return airportRepository.findAllLuxury();
+    }
+
+    @Override
+    public List<Airport> findAirportsByDynamicCriteria(String criteriaField, String criteriaValue) {
+        Assert.isTrue(
+                Arrays.stream(Airport.class.getDeclaredFields())
+                        .anyMatch(field -> field.getName().equals(criteriaField)),
+                "Field is invalid"
+        );
+        return airportRepository.findAirportsByDynamicCriteria(criteriaField, criteriaValue);
     }
 
 }

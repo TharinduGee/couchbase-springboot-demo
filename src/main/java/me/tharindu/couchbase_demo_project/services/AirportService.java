@@ -18,4 +18,6 @@ public interface AirportService {
 
     List<Airport> findAllLuxury();
 
+    List<Airport> findAirportsByDynamicCriteria(String field , String value);
+
 }

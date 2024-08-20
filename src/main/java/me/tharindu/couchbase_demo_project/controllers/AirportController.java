@@ -12,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import me.tharindu.couchbase_demo_project.models.Airport;
 import me.tharindu.couchbase_demo_project.services.AirportServiceImpl;
+import org.eclipse.jdt.internal.compiler.flow.UnconditionalFlowInfo;
 import org.springframework.data.couchbase.transaction.error.TransactionSystemAmbiguousException;
 import org.springframework.data.couchbase.transaction.error.TransactionSystemUnambiguousException;
 import org.springframework.http.HttpStatus;
@@ -33,6 +34,7 @@ public class AirportController {
     private static final String DOCUMENT_NOT_FOUND = "Document Not Found";
     private static final String DOCUMENT_EXISTS = "Document exists by same id";
     private static final String TRANSACTION_EXPIRED = "Transaction has expired.";
+    private static final String INVALID_FIELD = "Invalid Field";
 
     @GetMapping("/{id}")
     @Operation(summary = "Get an airport by ID", description = "Get Airport by specified ID.\n\nThis provides an example of using Key Value operations in Couchbase to retrieve a document with a specified ID. \n\n Code: [`controllers/AirportController.java`](https://github.com/couchbase-examples/java-springboot-quickstart/blob/main/src/main/java/org/couchbase/quickstart/springboot/controllers/AirportController.java) \n File: `AirportController.java` \n Method: `getAirport`", tags = {
@@ -138,6 +140,26 @@ public class AirportController {
             }else{
                 return new ResponseEntity<>(HttpStatus.NOT_FOUND);
             }
+        } catch (Exception ex) {
+            log.error(INTERNAL_SERVER_ERROR + ": {}", ex.getMessage());
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
+    }
+
+    @GetMapping("/dynamic")
+    public ResponseEntity<List<Airport>> findAirportsByDynamicCriteria(@RequestParam String criteriaField, @RequestParam String criteriaValue) {
+
+        try {
+            List<Airport> airports = airportService.findAirportsByDynamicCriteria(criteriaField, criteriaValue);
+            if(airports != null && !airports.isEmpty()){
+                return new ResponseEntity<>(airports, HttpStatus.OK);
+            }else{
+                return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+            }
+        } catch (IllegalArgumentException ex ) {
+            log.error(INVALID_FIELD+ ": {}", ex.getMessage());
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         } catch (Exception ex) {
             log.error(INTERNAL_SERVER_ERROR + ": {}", ex.getMessage());
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
